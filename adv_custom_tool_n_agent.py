@@ -62,7 +62,7 @@ my_tools = [
 # 3. Setup LLM (DeepSeek via OpenRouter or any OpenAI model)
 # ----------------------------------------------------------------------
 
-# os.environ["OPENAI_API_KEY"] = "your_api_key"      #uncomment this line
+os.environ["OPENAI_API_KEY"] = "your_api_key"      
 llm = ChatOpenAI(
     model_name="deepseek/deepseek-r1:free",
     openai_api_key=os.environ["OPENAI_API_KEY"],
