@@ -14,7 +14,7 @@ from langchain_community.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
 
 # ----------------------------------------------------------
-# 1️⃣ INDEXING: Load, Chunk & Embed documents into Vector DB
+# 1️⃣ INDEXING definition: Load, Chunk & Embed documents into Vector DB
 # ----------------------------------------------------------
 
 # 📁 Load a plain text file
