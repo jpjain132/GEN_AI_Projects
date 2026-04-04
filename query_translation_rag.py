@@ -721,6 +721,18 @@ Clean sub-questions before processing
 
 
 # # sample code for rrf fusion and hybrid fusion:-
+# HYBRID FUSION:
+# → Combines keyword (BM25) + semantic (vector)
+# → Uses weighted scoring
+
+# RRF:
+# → Combines rankings (not scores)
+# → Formula:
+#    score += 1 / (k + rank)
+
+# 👉 Even lower ranked docs get some importance
+# 👉 More robust than simple weighting
+
 # # ------------------------------------------------------------
 # # 📄 SAMPLE DOCUMENTS
 # # ------------------------------------------------------------
@@ -747,6 +759,28 @@ Clean sub-questions before processing
 
 # bm25_retriever = BM25Retriever.from_documents(docs)
 # bm25_retriever.k = 3
+"""
+BM25Retriever:
+👉 Keyword-based retriever (NOT semantic)
+
+BM25 formula (core idea):
+
+Score(D, Q) = Σ [ IDF(qi) * (f(qi, D) * (k1 + 1)) / (f(qi, D) + k1*(1 - b + b*(|D|/avgdl))) ]
+
+Where:
+- qi = query term
+- f(qi, D) = frequency of term qi in document D
+- |D| = length of document
+- avgdl = average document length
+- k1, b = hyperparameters (usually k1=1.5, b=0.75)
+
+👉 Intuition:
+- More term matches → higher score
+- Rare terms → more important (via IDF)
+
+bm25_retriever.k = 3:
+👉 return top 3 documents
+"""
 
 # # ============================================================
 # # 🔥 1️⃣ HYBRID FUSION (BM25 + VECTOR)
@@ -766,26 +800,67 @@ Clean sub-questions before processing
 #     print("-", doc.page_content)
 
 
-# # ============================================================
-# # 🔥 2️⃣ RRF (RECIPROCAL RANK FUSION) MANUAL IMPLEMENTATION
-# # ============================================================
-
+# ------------------------------------------------------------
+# 🔹 PART 2: RRF FUNCTION
+# ------------------------------------------------------------
 # def reciprocal_rank_fusion(results_list, k=60):
 #     """
 #     results_list = [list1, list2, ...]
 #     Each list = ranked docs from one retriever
 #     """
+
 #     scores = {}
 
+#     # --------------------------------------------------------
+#     # LOOP OVER EACH RETRIEVER RESULT
+#     # --------------------------------------------------------
+
 #     for result in results_list:
+
+#         # result = list of documents ranked by that retriever
+#         # Example:
+#         # [DocA, DocB, DocC]
+
 #         for rank, doc in enumerate(result):
+
+#             # rank = position in list (0-based)
+#             # DocA → rank 0
+#             # DocB → rank 1
+
 #             key = doc.page_content
+
 #             if key not in scores:
 #                 scores[key] = 0
+
+#             # ------------------------------------------------
+#             # 🔥 CORE RRF FORMULA
+#             # ------------------------------------------------
+
 #             scores[key] += 1 / (k + rank + 1)
 
-#     # Sort by score (descending)
-#     sorted_docs = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+            """
+            👉 RRF Formula:
+
+            Score(D) += 1 / (k + rank + 1)
+
+            Where:
+            - D = document
+            - rank = position in that retriever
+            - k = constant (usually 60)
+
+            👉 Example:
+            rank = 0 → score = 1 / (60 + 0 + 1) = 1/61
+            rank = 1 → score = 1 / (60 + 1 + 1) = 1/62
+
+            👉 Lower rank → higher contribution
+            👉 Higher rank → smaller contribution
+
+            👉 Why +1?
+            Avoid division by zero
+            """
+
+#     # Sort by final score
+#     sorted_docs = sorted(scores.items(), key=lambda x: x[1], reverse=True)    # 👉 Sort descending → best docs first
 
 #     return [doc for doc, _ in sorted_docs]
 
@@ -800,3 +875,61 @@ Clean sub-questions before processing
 # print("\n🔶 RRF FUSION RESULTS:")
 # for doc in rrf_results:
 #     print("-", doc)
+
+
+# ============================================================
+# 🧠 FULL MATHEMATICAL UNDERSTANDING
+# ============================================================
+
+"""
+👉 Suppose we have 2 retrievers:
+
+Retriever 1:
+[DocA, DocB, DocC]
+
+Retriever 2:
+[DocB, DocA, DocD]
+
+------------------------------------------------------------
+STEP 1: Assign ranks
+
+Retriever 1:
+DocA → rank 0
+DocB → rank 1
+DocC → rank 2
+
+Retriever 2:
+DocB → rank 0
+DocA → rank 1
+DocD → rank 2
+
+------------------------------------------------------------
+STEP 2: Apply RRF formula
+
+Score(D) = Σ (1 / (k + rank + 1))
+
+Let k = 60
+
+DocA:
+= 1/(61) + 1/(62)
+≈ 0.01639 + 0.01613 = 0.03252
+
+DocB:
+= 1/(62) + 1/(61)
+≈ same ≈ 0.03252
+
+DocC:
+= 1/(63) ≈ 0.01587
+
+DocD:
+= 1/(63) ≈ 0.01587
+
+------------------------------------------------------------
+STEP 3: SORT
+
+DocA ≈ DocB > DocC ≈ DocD
+
+👉 Final ranking:
+[DocA, DocB, DocC, DocD]
+"""
+
