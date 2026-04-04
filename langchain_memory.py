@@ -40,7 +40,7 @@ summary_chain = ConversationChain(llm=llm, memory=summary_memory, verbose=True)
 # -----------------------------------------------------------------------------
 # # 🔹 3. ConversationTokenBufferMemory (token-aware memory)
 token_buffer_memory = ConversationTokenBufferMemory(
-    llm=llm, max_token_limit=200
+    llm=llm, max_token_limit=200    # Keep last N tokens (e.g., 200 tokens)
 )
 token_buffer_chain = ConversationChain(llm=llm, memory=token_buffer_memory, verbose=True)
 
@@ -69,7 +69,7 @@ run_conversation(token_buffer_chain, "TokenAwareMemory")
 # 💡 Tips:
 # - BufferMemory stores everything, so responses can get lengthy.
 # - SummaryMemory uses the LLM to summarize the chat history.
-# - Token-aware memory limits context size to avoid LLM cutoff. (It’s the latest point in time up to which the model has been trained on data. It doesn't know about events or information after that date.)
+# - Token-aware memory limits context size to avoid LLM cutoff. (like Keep last N tokens (e.g., 1000 tokens))
 # - You can inspect `.memory.buffer` or `.memory.chat_memory` to debug.
 
 # ✅ You now understand LangChain memory systems!
@@ -89,13 +89,41 @@ run_conversation(token_buffer_chain, "TokenAwareMemory")
 # # 🧠 LANGCHAIN MEMORY TYPES (PROS, CONS, WHEN TO USE, RANKING)
 # # ============================================================
 
-# # Covers:
-# # - ConversationBufferMemory
-# # - ConversationSummaryMemory
-# # - ConversationTokenBufferMemory
-# # - Comparison (basic → entrepreneurial)
-# # - Real-world use cases
+# # ============================================================
+# # 🚀  ENTREPRENEURIAL USE CASES
+# # ============================================================
 
+# """
+# 🔹 1. SaaS Chatbot (Customer Support)
+# → Use: ConversationSummaryMemory
+# Why:
+# - Long conversations
+# - Reduce cost
+
+# 🔹 2. AI Assistant (ChatGPT-like)
+# → Use: ConversationTokenBufferMemory ⭐
+# Why:
+# - Keep recent context
+# - Avoid overflow
+
+# 🔹 3. Debugging / Testing
+# → Use: ConversationBufferMemory
+# Why:
+# - Need full logs
+
+# 🔹 4. Enterprise Knowledge Bot
+# → Use: TokenBuffer + RAG ⭐
+# Why:
+# - Memory + document retrieval
+
+# 🔹 5. Multi-session Chat App
+# → Use:
+# - TokenBuffer (short-term)
+# - DB storage (long-term)
+
+# 👉 Real architecture:
+# Short-term memory + long-term storage
+# """
 
 # # ============================================================
 # # 🔹 1. ConversationBufferMemory
@@ -209,60 +237,9 @@ run_conversation(token_buffer_chain, "TokenAwareMemory")
 # """
 
 
-# # ============================================================
-# # ⚖️ 5. COMPARISON TABLE
-# # ============================================================
-
-# """
-# Feature            Buffer      Summary      TokenBuffer
-# -------------------------------------------------------
-# Accuracy           ✅ High     ⚠️ Medium    ✅ High (recent)
-# Scalability        ❌ Poor     ✅ High      ✅ High
-# Cost               ❌ High     ✅ Low       ⚠️ Medium
-# Complexity         ✅ Low      ⚠️ Medium    ⚠️ Medium
-# Production Ready   ❌ No       ⚠️ Maybe     ✅ Yes ⭐
-# """
-
 
 # # ============================================================
-# # 🚀 6. ENTREPRENEURIAL USE CASES
-# # ============================================================
-
-# """
-# 🔹 1. SaaS Chatbot (Customer Support)
-# → Use: ConversationSummaryMemory
-# Why:
-# - Long conversations
-# - Reduce cost
-
-# 🔹 2. AI Assistant (ChatGPT-like)
-# → Use: ConversationTokenBufferMemory ⭐
-# Why:
-# - Keep recent context
-# - Avoid overflow
-
-# 🔹 3. Debugging / Testing
-# → Use: ConversationBufferMemory
-# Why:
-# - Need full logs
-
-# 🔹 4. Enterprise Knowledge Bot
-# → Use: TokenBuffer + RAG ⭐
-# Why:
-# - Memory + document retrieval
-
-# 🔹 5. Multi-session Chat App
-# → Use:
-# - TokenBuffer (short-term)
-# - DB storage (long-term)
-
-# 👉 Real architecture:
-# Short-term memory + long-term storage
-# """
-
-
-# # ============================================================
-# # 🧠 7. ADVANCED INSIGHT (VERY IMPORTANT 🔥)
+# # 🧠  ADVANCED INSIGHT (VERY IMPORTANT 🔥)
 # # ============================================================
 
 # """
@@ -277,18 +254,7 @@ run_conversation(token_buffer_chain, "TokenAwareMemory")
 # 👉 Best systems use BOTH:
 # Memory + RAG
 
-# Example:
-# ChatGPT:
-# - remembers conversation (memory)
-# - uses knowledge (LLM training + tools)
-# """
 
-
-# # ============================================================
-# # 🎯 FINAL INTERVIEW ANSWER
-# # ============================================================
-
-# """
 # "For production systems, ConversationTokenBufferMemory is preferred 
 # because it balances context retention and token efficiency, while 
 # ConversationSummaryMemory is useful for long conversations, and 
