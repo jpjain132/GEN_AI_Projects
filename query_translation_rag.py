@@ -759,23 +759,38 @@ Clean sub-questions before processing
 
 # bm25_retriever = BM25Retriever.from_documents(docs)
 # bm25_retriever.k = 3
+
+"" 
+BM25 FINAL SCORING IDEA:          BM25 score (short form) = Σ [ IDF(qi) × term_frequency_factor ] 
+Final score depends on COMBINATION of (not single factor):
+1. IDF (rarity of term)
+2. Term frequency in document (how many times word appears)
+3. Document length normalization
+"" 
+
 """
 BM25Retriever:
 👉 Keyword-based retriever (NOT semantic)
 
-BM25 formula (core idea):
-
-Score(D, Q) = Σ [ IDF(qi) * (f(qi, D) * (k1 + 1)) / (f(qi, D) + k1*(1 - b + b*(|D|/avgdl))) ]
-
+BM25 formula (long form):         BM25 Score(D, Q) = Σ [ IDF(qi) * (f(qi, D) * (k1 + 1)) / (f(qi, D) + k1*(1 - b + b*(|D|/avgdl))) ]
 Where:
 - qi = query term
 - f(qi, D) = frequency of term qi in document D
 - |D| = length of document
 - avgdl = average document length
 - k1, b = hyperparameters (usually k1=1.5, b=0.75)
+- IDF (rarity of term) = Inverse Document Frequency: Measures how "rare" or "important" a word is across all documents 
+Formula (standard): IDF(qi) = log( N / df(qi) )
+here:
+ N = total number of documents
+ df(qi) = number of documents containing term qi
+
+👉 BM25 variant (more stable):
+IDF(qi) = log( (N - df(qi) + 0.5) / (df(qi) + 0.5) + 1 )
+
 
 👉 Intuition:
-- More term matches → higher score
+- More term matches → higher Score(D, Q)
 - Rare terms → more important (via IDF)
 
 bm25_retriever.k = 3:
