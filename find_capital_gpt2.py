@@ -85,7 +85,9 @@ print(response[0]["generated_text"])
 # response[0]["generated_text"] → final answer text
 # """
 
-
+# # ------------------------------------------------------------
+# 3. Other Parameters:-
+# # ------------------------------------------------------------
 # repetition_penalty:
 # - Avoid repeating words
 # - >1 → less repetition
