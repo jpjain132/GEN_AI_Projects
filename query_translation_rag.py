@@ -797,6 +797,21 @@ bm25_retriever.k = 3:
 👉 return top 3 documents
 """
 
+# BM25 pipeline:-
+"""
+User Query
+↓
+BM25 Retriever
+↓
+Compute BM25 Score for each document
+↓
+Sort documents by score
+↓
+Select top-k documents
+↓
+Send to LLM (RAG context)
+"""
+
 # # ============================================================
 # # 🔥 1️⃣ HYBRID FUSION (BM25 + VECTOR)
 # # ============================================================
