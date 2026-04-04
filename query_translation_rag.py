@@ -710,16 +710,6 @@ Clean sub-questions before processing
 # reduce hallucination, and handle complex queries more effectively."
 # """
 
-
-
-
-
-
-
-
-
-
-
 # # sample code for rrf fusion and hybrid fusion:-
 # HYBRID FUSION:
 # → Combines keyword (BM25) + semantic (vector)
@@ -963,3 +953,197 @@ DocA ≈ DocB > DocC ≈ DocD
 [DocA, DocB, DocC, DocD]
 """
 
+
+
+
+
+
+# # ============================================================
+# # q. explain CONTEXTUAL COMPRESSION RETRIEVER
+# # ============================================================
+# # Code:
+# # compressor = EmbeddingsFilter(embeddings=embeddings)
+# # step_back = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=retriever)
+# # ============================================================
+# # 🔹 1. WHAT IS THIS DOING (HIGH LEVEL)?
+# # ============================================================
+# """
+# Normal RAG:
+# Query → Retriever → Top-k documents → LLM
+
+# Problem:
+# ❌ Retrieved docs may contain irrelevant/noisy text
+
+# Solution:
+# 👉 Step-back (Contextual Compression)
+
+# Query → Retriever → Compressor → Cleaned Docs → LLM
+
+# 🔥 Goal:
+# Reduce noise + improve relevance
+# """
+
+
+# # ============================================================
+# # 🔹 2. COMPONENT BREAKDOWN
+# # ============================================================
+
+# # -----------------------------
+# # EmbeddingsFilter
+# # -----------------------------
+
+# compressor = EmbeddingsFilter(embeddings=embeddings)
+
+# """
+# 👉 EmbeddingsFilter:
+# - Uses embeddings similarity
+# - Filters out irrelevant chunks
+
+# 👉 Input:
+# (query, retrieved_docs)
+
+# 👉 Output:
+# only relevant parts of documents
+# """
+
+
+# # -----------------------------
+# # ContextualCompressionRetriever
+# # -----------------------------
+
+# step_back = ContextualCompressionRetriever(
+#     base_compressor=compressor,
+#     base_retriever=retriever
+# )
+
+# """
+# 👉 Combines:
+# 1. Retriever (get docs)
+# 2. Compressor (filter docs)
+
+# 👉 Pipeline:
+# Query → Retriever → Compressor → Final Docs
+# """
+
+
+# # ============================================================
+# # 🔹 3. MATHEMATICAL CONCEPT (VERY IMPORTANT 🔥)
+# # ============================================================
+
+# """
+# Core idea = Cosine Similarity
+
+# Step 1:
+# Convert query → embedding vector
+# Q = embed(query)
+
+# Step 2:
+# Convert document chunks → embeddings
+# D1, D2, D3 ...
+
+# Step 3:
+# Compute similarity:
+
+# cosine_similarity(Q, Di) = (Q · Di) / (||Q|| × ||Di||)
+
+# Where:
+# - Q · Di = dot product
+# - ||Q|| = magnitude of Q
+# - ||Di|| = magnitude of Di
+
+# 👉 Range:
+# -1 to 1 (higher = more similar)
+
+
+# Step 4:
+# Apply threshold:
+
+# If similarity > threshold:
+#    keep chunk
+# Else:
+#    remove chunk
+# """
+
+
+# # ============================================================
+# # 🔹 4. WHY CALLED "STEP-BACK"?
+# # ============================================================
+
+# """
+# 👉 Instead of directly using retrieved docs,
+# system "steps back" and re-evaluates relevance
+
+# 👉 Think:
+# Retriever = broad search
+# Compressor = refine results
+
+# 🔥 Like:
+# Google search → then filter useful lines
+# """
+
+
+# # ============================================================
+# # 🔹 5. COMPLETE FLOW
+# # ============================================================
+
+# """
+# User Query
+# ↓
+# Retriever (top-k docs)
+# ↓
+# Split into chunks
+# ↓
+# Compute embeddings similarity
+# ↓
+# Filter irrelevant chunks
+# ↓
+# Send only relevant context to LLM
+# """
+
+
+# # ============================================================
+# # 🔹 6. BENEFITS
+# # ============================================================
+
+# """
+# ✅ Less noise
+# ✅ Faster LLM response
+# ✅ Better accuracy
+# ✅ Lower token cost
+# """
+
+
+# # ============================================================
+# # 🔹 7. WHEN TO USE
+# # ============================================================
+
+# """
+# Use when:
+# ✔ Large documents
+# ✔ Noisy data
+# ✔ Limited context window
+# ✔ Want precise answers
+
+# Avoid when:
+# ❌ Very small dataset
+# ❌ Already clean data
+# """
+
+
+# # ============================================================
+# # 🧠 ENTREPRENEURIAL INSIGHT 🔥
+# # ============================================================
+
+# """
+# Production systems ALWAYS use compression:
+
+# RAG Pipeline:
+# Retriever → Re-ranker / Compressor → LLM
+
+# 👉 Used in:
+# - ChatGPT plugins
+# - Enterprise search systems
+# - Legal/finance QA systems
+
+# 🔥 Improves accuracy significantly
+# """
