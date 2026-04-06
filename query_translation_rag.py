@@ -530,6 +530,25 @@ Clean sub-questions before processing
 #         👉 Step 3: search using fake answer
 #         """
 
+        @property
+        def lc_namespace(self) -> List[str]:
+            return []
+        
+        """
+        👉 @property
+        - Makes function behave like an attribute (no () needed)
+        
+        👉 lc_namespace
+        - Used internally by LangChain
+        - Helps identify/organize this component in LangChain ecosystem
+        
+        👉 return []
+        - Empty namespace (no grouping / default)
+        
+        🔥 Simple meaning:
+        "This custom retriever has no specific namespace/category in LangChain"
+        """
+
 # """
 # 🔥 WHY HyDE?
 # - Query may be weak
